@@ -1,5 +1,4 @@
 // app/layout.tsx
-import './globals.css'
 import { ReactNode } from 'react'
 
 export const metadata = {
@@ -7,7 +6,7 @@ export const metadata = {
   description: 'Organize and manage PDFs with ease.',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>{children}</body>
