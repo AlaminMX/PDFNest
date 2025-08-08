@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login - PDFNest</title>
+  <link rel="stylesheet" href="style.css">
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        background: linear-gradient(135deg, #f8f8f8, #e3e3e3);
+        color: #333;
+    }
+    header {
+        background: #c62828;
+        color: white;
+        padding: 1.5em;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .container {
+        max-width: 400px;
+        margin: 3em auto;
+        padding: 2em;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h2 {
+        color: #c62828;
+        text-align: center;
+        margin-bottom: 0.5em;
+    }
+    p {
+        text-align: center;
+        color: #777;
+        margin-bottom: 1.5em;
+    }
+    .input {
+        width: 100%;
+        padding: 0.8em;
+        margin: 0.5em 0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1em;
+    }
+    .btn {
+        width: 100%;
+        padding: 0.8em;
+        border: none;
+        border-radius: 6px;
+        font-size: 1em;
+        cursor: pointer;
+        margin-top: 0.5em;
+        transition: 0.2s;
+    }
+    .btn.primary {
+        background: #c62828;
+        color: white;
+    }
+    .btn.primary:hover {
+        background: #a71d1d;
+    }
+    .btn.secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+    .btn.secondary:hover {
+        background: #c2c2c2;
+    }
+    .btn.google {
+        background: white;
+        border: 1px solid #ddd;
+        color: #444;
+    }
+    .btn.google:hover {
+        background: #f5f5f5;
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>📄 PDFNest</h1>
+</header>
+
+<div class="container">
+    <h2>Login / Sign Up</h2>
+    <p>Access your secure PDF storage</p>
+    <input type="email" id="email" placeholder="Email" class="input" />
+    <input type="password" id="password" placeholder="Password" class="input" />
+    <button id="loginBtn" class="btn primary">Login</button>
+    <button id="signupBtn" class="btn secondary">Sign Up</button>
+    <button id="googleBtn" class="btn google">Continue with Google</button>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebase
