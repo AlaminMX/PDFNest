@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDFNest - Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage.js"></script>
+
+<script>
+// ====== Your Firebase Config ======
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+</script>
+
+</head>
+<body>
+<header>
+    <h1>📄 PDFNest Dashboard</h1>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="top-bar">
+            <h2>Hello, <span id="userEmail"></span></h2>
+            <button id="logoutBtn" class="btn danger small">Logout</button>
+        </div>
+        <hr>
+
+        <h3>Upload a PDF</h3>
+        <div class="upload-box">
+            <input type="file" id="pdfFile" accept="application/pdf" class="input-file" />
+            <button id="uploadBtn" class="btn primary">Upload</button>
+        </div>
+        <div id="uploadStatus" class="status"></div>
+
+        <h3>Your PDFs</h3>
+        <div id="fileList" class="file-list"></div>
+        <iframe id="pdfViewer" class="hidden pdf-frame"></iframe>
+    </div>
+</div>
+
+<script>
+document.getElementById("logoutBtn").onclick = () => auth.signOut().then(() => window.location = "login.html");
+
+auth.onAuthStateChanged(user => {
+    if (!user) {
+        window.location = "login.html";
+    } else {
+        document.getElementById("userEmail").textContent = user.email;
+        loadUserFiles(user.uid);
+    }
+});
+
+document.getElementById("uploadBtn").onclick = () => {
+    const file = pdfFile.files[0];
+    if (!file) return alert("Please select a PDF");
+    if (file.type !== "application/pdf") return alert("Only PDFs allowed");
+
+    const user = auth.currentUser;
+    const storageRef = storage.ref(`${user.uid}/${file.name}`);
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed',
+        snap => {
+            uploadStatus.textContent = `Uploading: ${Math.round((snap.bytesTransferred / snap.totalBytes) * 100)}%`;
+        },
+        err => alert(err),
+        () => {
+            uploadTask.snapshot.ref.getDownloadURL().then(url => {
+                db.collection("pdfs").add({
+                    uid: user.uid,
+                    name: file.name,
+                    url: url,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    pdfFile.value = "";
+                    loadUserFiles(user.uid);
+                    uploadStatus.textContent = "";
+                });
+            });
+        }
+    );
+};
+
+function loadUserFiles(uid) {
+    fileList.innerHTML = "Loading...";
+    db.collection("pdfs").where("uid", "==", uid).orderBy("createdAt", "desc").get()
+    .then(snapshot => {
+        fileList.innerHTML = "";
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const div = document.createElement("div");
+            div.innerHTML = `<strong>${data.name}</strong> <button class="btn small secondary" onclick="viewPDF('${data.url}')">View</button>`;
+            fileList.appendChild(div);
+        });
+    });
+}
+
+function viewPDF(url) {
+    pdfViewer.src = url;
+    pdfViewer.classList.remove("hidden");
+}
+</script>
+</body>
+</html>
