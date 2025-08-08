@@ -14,28 +14,35 @@
 
 <div class="container">
     <!-- LOGIN / REGISTER -->
-    <div id="auth-section">
-        <h2>Login / Sign Up</h2>
-        <input type="email" id="email" placeholder="Email" /><br>
-        <input type="password" id="password" placeholder="Password" /><br>
-        <button id="loginBtn">Login</button>
-        <button id="signupBtn">Sign Up</button>
-        <button id="googleBtn">Login with Google</button>
+    <div id="auth-section" class="card">
+        <h2 class="title">Welcome to <span class="brand">PDFNest</span></h2>
+        <p class="subtitle">Sign in to store & access your PDFs securely</p>
+        <input type="email" id="email" placeholder="Email" class="input" />
+        <input type="password" id="password" placeholder="Password" class="input" />
+        <div class="btn-group">
+            <button id="loginBtn" class="btn primary">Login</button>
+            <button id="signupBtn" class="btn secondary">Sign Up</button>
+        </div>
+        <button id="googleBtn" class="btn google">Continue with Google</button>
     </div>
 
     <!-- MAIN APP -->
-    <div id="app-section" class="hidden">
-        <h2>Welcome, <span id="userEmail"></span></h2>
-        <button id="logoutBtn">Logout</button>
+    <div id="app-section" class="card hidden">
+        <div class="top-bar">
+            <h2>Hello, <span id="userEmail"></span></h2>
+            <button id="logoutBtn" class="btn danger small">Logout</button>
+        </div>
         <hr>
         <h3>Upload a PDF</h3>
-        <input type="file" id="pdfFile" accept="application/pdf" />
-        <button id="uploadBtn">Upload</button>
-        <div id="uploadStatus"></div>
+        <div class="upload-box">
+            <input type="file" id="pdfFile" accept="application/pdf" class="input-file" />
+            <button id="uploadBtn" class="btn primary">Upload</button>
+        </div>
+        <div id="uploadStatus" class="status"></div>
 
         <h3>Your PDFs</h3>
         <div id="fileList" class="file-list"></div>
-        <iframe id="pdfViewer" class="hidden"></iframe>
+        <iframe id="pdfViewer" class="hidden pdf-frame"></iframe>
     </div>
 </div>
 
