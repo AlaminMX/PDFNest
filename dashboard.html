@@ -5,119 +5,219 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDFNest - Dashboard</title>
 <link rel="stylesheet" href="style.css">
-
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage.js"></script>
-
 <script>
-// ====== Your Firebase Config ======
-const firebaseConfig = {
-  apiKey: "AIzaSyCA5P1W15FRzPUfjOrPoTRrHy2q-cHk6DI",
-  authDomain: "pdfnestt.firebaseapp.com",
-  projectId: "pdfnestt",
-  storageBucket: "pdfnestt.firebasestorage.app",
-  messagingSenderId: "431285342689",
-  appId: "1:431285342689:web:558e385f1a984b341f02a0",
-  measurementId: "G-3R2R30S0N1"
-};
-    
+const firebaseConfig = { apiKey: "AIzaSyCA5P1W15FRzPUfjOrPoTRrHy2q-cHk6DI", authDomain: "pdfnestt.firebaseapp.com", projectId: "pdfnestt", storageBucket: "pdfnestt.firebasestorage.app", messagingSenderId: "431285342689", appId: "1:431285342689:web:558e385f1a984b341f02a0", measurementId: "G-3R2R30S0N1" };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 </script>
-
 </head>
 <body>
-<header>
+<header class="dashboard-header">
+    <button id="sidebarToggle" class="menu-icon" aria-label="Toggle sidebar"><span></span><span></span><span></span></button>
     <h1>📄 PDFNest Dashboard</h1>
+    <button id="logoutBtn" class="btn danger small">Logout</button>
 </header>
 
-<div class="container">
-    <div class="card">
-        <div class="top-bar">
-            <h2>Hello, <span id="userEmail"></span></h2>
-            <button id="logoutBtn" class="btn danger small">Logout</button>
-        </div>
-        <hr>
+<div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+        <button class="nav-link active" data-tab="homeTab">Home</button>
+        <button class="nav-link" data-tab="profileTab">Profile</button>
+        <button class="nav-link" data-tab="facultyTab">Faculty Tiles</button>
+        <button class="nav-link" data-tab="repTab">Rep Forwarding</button>
+        <button class="nav-link" data-tab="adminTab">Admin</button>
+    </aside>
 
-        <h3>Upload a PDF</h3>
-        <div class="upload-box">
-            <input type="file" id="pdfFile" accept="application/pdf" class="input-file" />
-            <button id="uploadBtn" class="btn primary">Upload</button>
-        </div>
-        <div id="uploadStatus" class="status"></div>
+    <main class="container dashboard-container">
+        <section id="homeTab" class="card tab-panel active">
+            <div class="top-bar">
+                <h2>Hello, <span id="displayName">there</span></h2>
+                <button id="contributeBtn" class="btn primary small">Contribute</button>
+            </div>
+            <p class="subtitle left">Signed in as <span id="userEmail"></span></p>
+            <hr>
 
-        <h3>Your PDFs</h3>
-        <div id="fileList" class="file-list"></div>
-        <iframe id="pdfViewer" class="hidden pdf-frame"></iframe>
+            <h3>Upload a PDF</h3>
+            <div class="upload-box">
+                <input type="file" id="pdfFile" accept="application/pdf" class="input-file" />
+                <input type="text" id="courseName" class="input compact" placeholder="Course name/code">
+                <button id="uploadBtn" class="btn primary">Upload</button>
+            </div>
+            <div id="uploadStatus" class="status"></div>
+
+            <h3>Your PDFs</h3>
+            <div id="fileList" class="file-list"></div>
+            <iframe id="pdfViewer" class="hidden pdf-frame"></iframe>
+        </section>
+
+        <section id="profileTab" class="card tab-panel">
+            <div id="profileLoader" class="book-loader" aria-label="Loading profile"><span></span><span></span><span></span></div>
+            <div id="profileContent" class="hidden">
+                <h2>Profile</h2>
+                <p><strong>Name:</strong> <span id="profileName"></span></p>
+                <p><strong>Account type:</strong> <span id="profileType"></span></p>
+                <p id="studentDetails"><strong>Department:</strong> <span id="profileDepartment">Not set</span></p>
+            </div>
+        </section>
+
+        <section id="facultyTab" class="card tab-panel">
+            <h2>Faculty tiles</h2>
+            <p class="subtitle left">Tiles do not reserve icon space when no icon is provided. Background images can be added with the tile color as an overlay.</p>
+            <div class="admin-form">
+                <input id="tileTitle" class="input" placeholder="Faculty name" value="Science">
+                <input id="tileColor" class="input" type="color" value="#c62828" title="Overlay color">
+                <input id="tileImage" class="input" placeholder="Background image URL">
+                <button id="addTileBtn" class="btn secondary">Add tile</button>
+            </div>
+            <div id="facultyTiles" class="faculty-grid"></div>
+        </section>
+
+        <section id="repTab" class="card tab-panel">
+            <h2>Representative forwarding</h2>
+            <select id="repDocument" class="input"><option>CSC 101 - Intro Notes.pdf</option><option>MTH 201 - Calculus.pdf</option></select>
+            <select id="targetDepartment" class="input"><option>Computer Science</option><option>Mathematics</option><option>Physics</option></select>
+            <input id="targetCourse" class="input" placeholder="Target course code/name">
+            <button id="forwardBtn" class="btn primary">Forward document</button>
+            <div id="repStatus" class="status"></div>
+        </section>
+
+        <section id="adminTab" class="card tab-panel admin-layout">
+            <nav class="admin-sidebar" aria-label="Admin sections">
+                <button class="admin-nav active" data-admin="overview">Overview</button>
+                <button class="admin-nav" data-admin="faculties">Faculties</button>
+                <button class="admin-nav" data-admin="documents">Documents</button>
+                <button class="admin-nav" data-admin="users">Users</button>
+            </nav>
+            <div class="admin-content">
+                <h2 id="adminHeading">Overview</h2>
+                <p>No back button needed here: admin tabs now use sidebar navigation.</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="onboardingModal" class="modal hidden">
+    <div class="modal-card">
+        <div id="studentStep">
+            <p class="step-label">Step 1</p>
+            <h2>Are you a student?</h2>
+            <div class="btn-group"><button id="studentYes" class="btn primary">Yes, I am</button><button id="studentNo" class="btn secondary">No</button></div>
+        </div>
+        <div id="nameStep" class="hidden">
+            <h2>Choose a username/nickname</h2>
+            <input id="nicknameInput" class="input" placeholder="Nickname">
+            <button id="saveProfileBtn" class="btn primary">Continue</button>
+        </div>
+        <div id="completeStep" class="hidden center-card">
+            <h2>Welcome to PDFNest 🎉</h2>
+            <p>Your sign-up is complete.</p>
+            <button id="finishOnboardingBtn" class="btn primary">Go to dashboard</button>
+        </div>
     </div>
 </div>
 
+<div id="messageModal" class="modal hidden"><div class="modal-card"><p id="messageText"></p><button id="messageOk" class="btn primary">OK</button></div></div>
+
 <script>
-document.getElementById("logoutBtn").onclick = () => auth.signOut().then(() => window.location = "login.html");
+let currentProfile = null;
+let pendingIsStudent = true;
+const fallbackTiles = [{ title: "Science", color: "#c62828", image: "" }, { title: "Arts", color: "#455a64", image: "" }];
+
+logoutBtn.onclick = () => auth.signOut().then(() => window.location = "login.html");
+sidebarToggle.onclick = () => sidebar.classList.toggle("open");
+document.querySelectorAll(".nav-link").forEach(btn => btn.onclick = () => showTab(btn));
+document.querySelectorAll(".admin-nav").forEach(btn => btn.onclick = () => { document.querySelectorAll(".admin-nav").forEach(n => n.classList.remove("active")); btn.classList.add("active"); adminHeading.textContent = btn.textContent; });
+
+function showTab(btn) {
+    document.querySelectorAll(".nav-link").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "profileTab") loadProfileView();
+}
+
+function showMessage(message) { messageText.textContent = message; messageModal.classList.remove("hidden"); }
+messageOk.onclick = () => messageModal.classList.add("hidden");
+studentYes.onclick = () => { pendingIsStudent = true; studentStep.classList.add("hidden"); nameStep.classList.remove("hidden"); };
+studentNo.onclick = () => { pendingIsStudent = false; studentStep.classList.add("hidden"); nameStep.classList.remove("hidden"); };
+finishOnboardingBtn.onclick = () => onboardingModal.classList.add("hidden");
+saveProfileBtn.onclick = () => saveProfile();
+contributeBtn.onclick = () => { if (!currentProfile?.isStudent) return showMessage("Only students can contribute documents."); pdfFile.focus(); };
+
+function saveProfile() {
+    const nickname = nicknameInput.value.trim() || auth.currentUser.email.split("@")[0];
+    const profile = { nickname, isStudent: pendingIsStudent, department: pendingIsStudent ? "General Studies" : "", onboardingComplete: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    db.collection("profiles").doc(auth.currentUser.uid).set(profile, { merge: true }).then(() => {
+        currentProfile = profile;
+        renderIdentity();
+        nameStep.classList.add("hidden");
+        completeStep.classList.remove("hidden");
+    }).catch(alert);
+}
 
 auth.onAuthStateChanged(user => {
-    if (!user) {
-        window.location = "login.html";
-    } else {
-        document.getElementById("userEmail").textContent = user.email;
+    if (!user) return window.location = "login.html";
+    userEmail.textContent = user.email;
+    db.collection("profiles").doc(user.uid).get().then(doc => {
+        currentProfile = doc.exists ? doc.data() : null;
+        if (!currentProfile?.onboardingComplete) onboardingModal.classList.remove("hidden");
+        renderIdentity();
         loadUserFiles(user.uid);
-    }
+        renderTiles(fallbackTiles);
+    });
 });
 
-document.getElementById("uploadBtn").onclick = () => {
+function renderIdentity() {
+    displayName.textContent = currentProfile?.nickname || auth.currentUser.email;
+}
+
+function loadProfileView() {
+    profileContent.classList.add("hidden");
+    profileLoader.classList.remove("hidden");
+    setTimeout(() => {
+        profileLoader.classList.add("hidden");
+        profileName.textContent = currentProfile?.nickname || auth.currentUser.email;
+        profileType.textContent = currentProfile?.isStudent ? "Student" : "Regular user";
+        studentDetails.classList.toggle("hidden", !currentProfile?.isStudent);
+        profileDepartment.textContent = currentProfile?.department || "Not set";
+        profileContent.classList.remove("hidden");
+    }, 800);
+}
+
+uploadBtn.onclick = () => {
+    if (!currentProfile?.isStudent) return showMessage("Only students can contribute documents.");
     const file = pdfFile.files[0];
     if (!file) return alert("Please select a PDF");
     if (file.type !== "application/pdf") return alert("Only PDFs allowed");
-
+    const course = courseName.value.trim();
+    if (course && !confirm(`Create course \"${course}\" in your department if it does not exist?`)) return;
     const user = auth.currentUser;
-    const storageRef = storage.ref(`${user.uid}/${file.name}`);
-    const uploadTask = storageRef.put(file);
-
-    uploadTask.on('state_changed',
-        snap => {
-            uploadStatus.textContent = `Uploading: ${Math.round((snap.bytesTransferred / snap.totalBytes) * 100)}%`;
-        },
-        err => alert(err),
-        () => {
-            uploadTask.snapshot.ref.getDownloadURL().then(url => {
-                db.collection("pdfs").add({
-                    uid: user.uid,
-                    name: file.name,
-                    url: url,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    pdfFile.value = "";
-                    loadUserFiles(user.uid);
-                    uploadStatus.textContent = "";
-                });
-            });
-        }
-    );
+    const uploadTask = storage.ref(`${user.uid}/${file.name}`).put(file);
+    uploadTask.on('state_changed', snap => uploadStatus.textContent = `Uploading: ${Math.round((snap.bytesTransferred / snap.totalBytes) * 100)}%`, alert, () => {
+        uploadTask.snapshot.ref.getDownloadURL().then(url => db.collection("pdfs").add({ uid: user.uid, name: file.name, url, course, department: currentProfile?.department || "", createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { pdfFile.value = ""; courseName.value = ""; uploadStatus.textContent = ""; loadUserFiles(user.uid); }));
+    });
 };
 
 function loadUserFiles(uid) {
     fileList.innerHTML = "Loading...";
-    db.collection("pdfs").where("uid", "==", uid).orderBy("createdAt", "desc").get()
-    .then(snapshot => {
-        fileList.innerHTML = "";
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const div = document.createElement("div");
-            div.innerHTML = `<strong>${data.name}</strong> <button class="btn small secondary" onclick="viewPDF('${data.url}')">View</button>`;
-            fileList.appendChild(div);
-        });
+    db.collection("pdfs").where("uid", "==", uid).orderBy("createdAt", "desc").get().then(snapshot => {
+        fileList.innerHTML = snapshot.empty ? "No PDFs yet." : "";
+        snapshot.forEach(doc => { const data = doc.data(); const div = document.createElement("div"); div.innerHTML = `<strong>${data.name}</strong> <button class="btn small secondary" onclick="viewPDF('${data.url}')">View</button>`; fileList.appendChild(div); });
     });
 }
+function viewPDF(url) { pdfViewer.src = url; pdfViewer.classList.remove("hidden"); }
 
-function viewPDF(url) {
-    pdfViewer.src = url;
-    pdfViewer.classList.remove("hidden");
+addTileBtn.onclick = () => { fallbackTiles.push({ title: tileTitle.value || "New faculty", color: tileColor.value, image: tileImage.value }); renderTiles(fallbackTiles); };
+function renderTiles(tiles) {
+    facultyTiles.innerHTML = "";
+    tiles.forEach(tile => { const div = document.createElement("div"); div.className = "faculty-tile"; div.style.setProperty("--tile-color", tile.color || "transparent"); if (tile.image) div.style.backgroundImage = `linear-gradient(${tile.color || 'transparent'}, ${tile.color || 'transparent'}), url('${tile.image}')`; div.innerHTML = `<h3>${tile.title}</h3>`; facultyTiles.appendChild(div); });
 }
+forwardBtn.onclick = () => { const course = targetCourse.value.trim(); if (course && confirm(`Course \"${course}\" was not found in ${targetDepartment.value}. Create it and forward the document?`)) repStatus.textContent = `${repDocument.value} forwarded to ${targetDepartment.value} for ${course}.`; };
 </script>
 </body>
 </html>
