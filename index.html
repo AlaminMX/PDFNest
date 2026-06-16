@@ -1,163 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylsheet" href="style.css">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PDFNest</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
+<header class="hero-header">
+    <button class="menu-icon" aria-label="Open navigation"><span></span><span></span><span></span></button>
     <h1>📄 PDFNest</h1>
-    <p>Store and View Your PDFs Securely</p>
+    <p>Store, discover, and share academic PDFs securely.</p>
+    <a href="login.html" id="landingLoginBtn" class="btn primary hero-login">Login</a>
 </header>
 
-<div class="container">
-
-    <!-- MAIN APP -->
-    <div id="app-section" class="card hidden">
-        <div class="top-bar">
-            <h2>Hello, <span id="userEmail"></span></h2>
-            <button id="logoutBtn" class="btn danger small">Logout</button>
+<main class="container landing">
+    <section class="card center-card">
+        <h2 class="title">Your campus document nest</h2>
+        <p class="subtitle">Find departmental resources, upload approved PDFs, and keep your profile up to date.</p>
+        <div class="btn-group landing-actions">
+            <a href="login.html" class="btn primary">Sign in</a>
+            <a href="login.html?mode=signup" class="btn secondary">Create account</a>
         </div>
-        <hr>
-        <h3>Upload a PDF</h3>
-        <div class="upload-box">
-            <input type="file" id="pdfFile" accept="application/pdf" class="input-file" />
-            <button id="uploadBtn" class="btn primary">Upload</button>
-        </div>
-        <div id="uploadStatus" class="status"></div>
-
-        <h3>Your PDFs</h3>
-        <div id="fileList" class="file-list"></div>
-        <iframe id="pdfViewer" class="hidden pdf-frame"></iframe>
-    </div>
-</div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-storage.js"></script>
-
-<script>
-/* ====== 1. YOUR FIREBASE CONFIG HERE ====== */
-const firebaseConfig = {
-  apiKey: "AIzaSyCA5P1W15FRzPUfjOrPoTRrHy2q-cHk6DI",
-  authDomain: "pdfnestt.firebaseapp.com",
-  projectId: "pdfnestt",
-  storageBucket: "pdfnestt.firebasestorage.app",
-  messagingSenderId: "431285342689",
-  appId: "1:431285342689:web:558e385f1a984b341f02a0",
-  measurementId: "G-3R2R30S0N1"
-};
-    
-
-/* ====== 2. INIT FIREBASE ====== */
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-/* ====== 3. DOM ELEMENTS ====== */
-const authSection = document.getElementById("auth-section");
-const appSection = document.getElementById("app-section");
-const userEmail = document.getElementById("userEmail");
-const pdfFile = document.getElementById("pdfFile");
-const fileList = document.getElementById("fileList");
-const pdfViewer = document.getElementById("pdfViewer");
-
-/* ====== 4. AUTH HANDLERS ====== */
-document.getElementById("signupBtn").onclick = () => {
-    auth.createUserWithEmailAndPassword(
-        document.getElementById("email").value,
-        document.getElementById("password").value
-    ).catch(alert);
-};
-
-document.getElementById("loginBtn").onclick = () => {
-    auth.signInWithEmailAndPassword(
-        document.getElementById("email").value,
-        document.getElementById("password").value
-    ).catch(alert);
-};
-
-document.getElementById("googleBtn").onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(alert);
-};
-
-document.getElementById("logoutBtn").onclick = () => auth.signOut();
-
-/* ====== 5. LISTENER FOR LOGIN STATE ====== */
-auth.onAuthStateChanged(user => {
-    if (user) {
-        authSection.classList.add("hidden");
-        appSection.classList.remove("hidden");
-        userEmail.textContent = user.email;
-        loadUserFiles(user.uid);
-    } else {
-        authSection.classList.remove("hidden");
-        appSection.classList.add("hidden");
-    }
-});
-
-/* ====== 6. UPLOAD PDF ====== */
-document.getElementById("uploadBtn").onclick = () => {
-    const file = pdfFile.files[0];
-    if (!file) return alert("Please select a PDF file");
-    if (file.type !== "application/pdf") return alert("Only PDFs allowed");
-
-    const user = auth.currentUser;
-    const storageRef = storage.ref(`${user.uid}/${file.name}`);
-    const uploadTask = storageRef.put(file);
-
-    uploadTask.on('state_changed',
-        snapshot => {
-            document.getElementById("uploadStatus").innerText =
-                `Uploading: ${Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)}%`;
-        },
-        error => alert(error),
-        () => {
-            uploadTask.snapshot.ref.getDownloadURL().then(url => {
-                db.collection("pdfs").add({
-                    uid: user.uid,
-                    name: file.name,
-                    url: url,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    pdfFile.value = "";
-                    loadUserFiles(user.uid);
-                });
-            });
-        }
-    );
-};
-
-/* ====== 7. LOAD USER FILES ====== */
-function loadUserFiles(uid) {
-    fileList.innerHTML = "Loading...";
-    db.collection("pdfs")
-        .where("uid", "==", uid)
-        .orderBy("createdAt", "desc")
-        .get()
-        .then(snapshot => {
-            fileList.innerHTML = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const div = document.createElement("div");
-                div.innerHTML = `<strong>${data.name}</strong> 
-                    <button onclick="viewPDF('${data.url}')">View</button>`;
-                fileList.appendChild(div);
-            });
-        });
-}
-
-/* ====== 8. VIEW PDF ====== */
-function viewPDF(url) {
-    pdfViewer.src = url;
-    pdfViewer.classList.remove("hidden");
-}
-</script>
+    </section>
+</main>
 </body>
 </html>
